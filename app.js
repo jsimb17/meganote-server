@@ -1,41 +1,22 @@
 require('dotenv').load();
 var express = require('express');
-var Note = require('./models/note');
 var bodyParser = require('body-parser');
+var noteRoutes = require('./routes/note-routes');
+var userRoutes = require('./routes/user-routes');
+var headersMiddleware = require('./middleware/headers');
 
 var app = express();
 
-app.use(function(req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Content-Type')
-  next();
-});
+// Middleware
+app.use(headersMiddleware);
 
+// Body parsing for JSON POST/PUT payloads
 app.use(bodyParser.json());
 
-app.get('/', function(req, res) {
-  Note
-    .find()
-    .then(function(notes) {
-      res.json(notes);
-    });
-});
+// Routes
+app.use('/api/v1/notes', noteRoutes);
+app.use('/api/v1/users', userRoutes);
 
-app.post('/', function(req, res) {
-  var note = new Note({
-    title: req.body.note.title ,
-    body_html: req.body.note.body_html
-  });
-
-  note
-    .save()
-    .then(function(noteData) {
-      res.json({
-        message: 'Successfully updated note',
-        note: noteData
-      })
-    });
-});
 
 app.listen(3030, function() {
   console.log('Listening on http://localhost:3030...');
